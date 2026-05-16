@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix — Cartelera Premium</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           SISTEMA DE DISEÑO INTERACTIVO PREMIUM
+           ========================================================================== */
+        :root {
+            --bg-main: #0a0c16;           /* Azul noche cinemático profundo */
+            --bg-surface: #14192d;        /* Fondo base de tarjetas y menús */
+            --bg-surface-hover: #1e2542;  /* Resaltes para hovers */
+            --accent-red: #e50914;        /* Rojo vivo de streaming */
+            --accent-blue: #00f0ff;       /* Cyan eléctrico para detalles de ubicación */
+            --text-pure: #ffffff;         /* Blanco puro */
+            --text-muted: #9ca3af;        /* Gris atenuado para metadatos */
+            
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-base: 'Inter', sans-serif;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-pure);
+            font-family: var(--font-base);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- Barra de Navegación / Header --- */
+        .main-header {
+            background: linear-gradient(to bottom, rgba(10, 12, 22, 0.95) 0%, rgba(10, 12, 22, 0.7) 100%);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .logo span { color: var(--accent-red); }
+        
+        .header-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            border-left: 2px solid var(--accent-red);
+            padding-left: 0.8rem;
+        }
+
+        /* --- Panel de Filtros Estilizado --- */
+        .container-filters {
+            margin-top: 2.5rem;
+            margin-bottom: 2.5rem;
+            background-color: rgba(20, 25, 45, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .filter-select {
+            background-color: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-pure) !important;
+            border-radius: var(--radius-md);
+            padding: 0.65rem 1rem;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-select:focus {
+            background-color: var(--bg-surface-hover);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+            outline: none;
+        }
+
+        /* --- Grid de Tarjetas Cinéfilas --- */
+        .movie-card-wrapper {
+            transition: var(--transition-smooth);
+            height: 100%;
+        }
+
+        .movie-card {
+            background-color: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        /* Efectos Hover de la tarjeta */
+        .movie-card-wrapper:hover {
+            transform: translateY(-8px);
+        }
+
+        .movie-card-wrapper:hover .movie-card {
+            border-color: rgba(229, 9, 20, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(229, 9, 20, 0.1);
+        }
+
+        /* Relación de aspecto ideal para póster (2:3) */
+        .poster-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2/3;
+            background-color: #151824;
+            overflow: hidden;
+        }
+
+        .poster-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .movie-card-wrapper:hover .poster-container img {
+            transform: scale(1.06);
+        }
+
+        /* Capa superpuesta en el Hover */
+        .hover-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10, 12, 22, 0.95) 0%, rgba(10, 12, 22, 0.3) 70%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 2;
+        }
+
+        .movie-card-wrapper:hover .hover-overlay { opacity: 1; }
+
+        .overlay-btn {
+            padding: 0.6rem 1.3rem;
+            background-color: var(--accent-red);
+            color: var(--text-pure);
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transform: translateY(15px);
+            transition: var(--transition-smooth);
+            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.4);
+        }
+
+        .movie-card-wrapper:hover .overlay-btn { transform: translateY(0); }
+
+        /* Etiquetas de Disponibilidad */
+        .badge-status {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(40, 167, 69, 0.9);
+            backdrop-filter: blur(4px);
+            color: var(--text-pure);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 0.35rem 0.8rem;
+            border-radius: var(--radius-sm);
+            z-index: 3;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .badge-status.inactive {
+            background: rgba(220, 53, 69, 0.9);
+        }
+
+        /* Cuerpo del Texto */
+        .card-content-body {
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .movie-title-short {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        .meta-year { color: var(--text-muted); font-weight: 500; }
+        .meta-location { color: var(--accent-blue); font-weight: 500; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- MODAL ESTILO STREAMING --- */
+        .modal-content {
+            background-color: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+        }
+
+        .btn-close-custom {
+            position: absolute; top: 15px; right: 15px; z-index: 10; width: 36px; height: 36px;
+            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-pure); border-radius: 50%; font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth);
+            line-height: 1;
+        }
+        .btn-close-custom:hover { background-color: var(--accent-red); transform: rotate(90deg); border-color: transparent; }
+        
+        .modal-visual-block { background-color: #090b14; display: flex; align-items: center; justify-content: center; padding: 2.5rem 0; position: relative; overflow: hidden; }
+        .modal-blur-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(20px) brightness(0.25); transform: scale(1.1); z-index: 0; }
+        .modal-poster-wrapper { position: relative; width: 170px; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.7); z-index: 1; }
+        .modal-poster-wrapper img { width: 100%; display: block; height: auto; }
+        
+        .modal-movie-title { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.02em; margin-bottom: 1rem; line-height: 1.1; }
+        .modal-badge-info { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; display: inline-block; }
+        .modal-badge-info.genre { background: rgba(0, 240, 255, 0.1); color: #60a5fa; border: 1px solid rgba(0, 240, 255, 0.25); }
+        .modal-badge-info.year { background: rgba(229, 9, 20, 0.12); color: #f87171; border: 1px solid rgba(229, 9, 20, 0.25); }
+        .modal-badge-info.location { background: rgba(255, 255, 255, 0.05); color: #e5e7eb; border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .synopsis-section { margin-top: 1.8rem; }
+        .synopsis-title { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .synopsis-text { font-size: 0.95rem; line-height: 1.6; color: #d1d5db; }
+
+        .modal.fade .modal-dialog { transform: scale(0.93) translateY(12px); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .modal.show .modal-dialog { transform: scale(1) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container d-flex align-items-center justify-content-between">
+            <div class="logo">STREAM<span>FLIX</span></div>
+            <div class="header-tag d-none d-sm-block">CARTELERA DIGITAL INTERACTIVA</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="container-filters">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4 col-sm-6">
+                    <label for="filtroUbicacion" class="filter-label">📍 Filtrar por Complejo</label>
+                    <select id="filtroUbicacion" class="form-select filter-select">
+                        <option value="">Todas las ubicaciones</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <label for="buscarGenero" class="filter-label">🎭 Filtrar por Género</label>
+                    <select id="buscarGenero" class="form-select filter-select">
+                        <option value="">Todos los géneros</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 text-md-end text-start pt-md-4">
+                    <span id="contadorResultados" class="text-muted small fw-medium"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container mb-5">
+        <div id="peliculas" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4"></div>
+    </main>
+
+    <div class="modal fade" id="movieDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content text-white">
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Cerrar">✕</button>
+                <div class="row g-0">
+                    <div class="col-md-5 position-relative modal-visual-block">
+                        <div id="modalBgBlur" class="modal-blur-bg"></div>
+                        <div class="modal-poster-wrapper">
+                            <img id="modalPoster" src="" alt="Póster Detallado">
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="modal-body p-4 p-md-5">
+                            <h2 id="modalTitle" class="modal-movie-title"></h2>
+                            <div class="d-flex gap-2 flex-wrap mb-4" id="modalBadgesContainer"></div>
+                            <div class="synopsis-section">
+                                <h5 class="synopsis-title">Sinopsis Oficial</h5>
+                                <p id="modalDescription" class="synopsis-text"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
